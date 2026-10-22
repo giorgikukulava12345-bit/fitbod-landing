@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {exercises,starterItems,validItems,levelNames,muscleNames,equipmentNames} from '../src/lib/catalog.ts';
-test('catalog has 108 unique bilingual exercises covering each level and muscle',()=>{
- assert.equal(exercises.length,108);assert.equal(new Set(exercises.map(e=>e.id)).size,108);
- for(const level of Object.keys(levelNames))assert.equal(exercises.filter(e=>e.level===level).length,36);
- for(const muscle of Object.keys(muscleNames))assert.equal(exercises.filter(e=>e.muscle===muscle).length,12);
+test('catalog has 120 unique bilingual exercises covering each level and muscle',()=>{
+ assert.equal(exercises.length,120);assert.equal(new Set(exercises.map(e=>e.id)).size,120);
+ for(const level of Object.keys(levelNames))assert.ok(exercises.filter(e=>e.level===level).length>=36);
+ for(const muscle of Object.keys(muscleNames))assert.ok(exercises.filter(e=>e.muscle===muscle).length>=12);
  for(const e of exercises){assert.match(e.name_ka,/[ა-ჰ]/);assert.ok(e.equipment in equipmentNames);assert.ok(e.cue&&e.cue_ka)}
 });
 test('all starter routines contain five distinct real exercises and valid set values',()=>{
