@@ -10,6 +10,7 @@ const labels={en:{home:'Overview',library:'Exercise library',builder:'Workout bu
 export function FitnessApp(){
  const {session,ready,lang,setLang}=useApp();const ka=lang==='ka';const t=(en:string,kaText:string)=>ka?kaText:en;const userId=session?.user.id;
  const [tab,setTab]=useState<Tab>('home');const [auth,setAuth]=useState<'signup'|'login'|null>(null);const closeAuth=useCallback(()=>setAuth(null),[]);
+ useEffect(()=>{if(session)setAuth(null)},[session]);
  const [catalog,setCatalog]=useState<Exercise[]>(exercises);const [catalogOffline,setCatalogOffline]=useState(false);
  const [search,setSearch]=useState('');const [level,setLevel]=useState<Level|'all'>('all');const [muscle,setMuscle]=useState<Muscle|'all'>('all');const [equipment,setEquipment]=useState<Equipment|'all'>('all');const [visible,setVisible]=useState(18);
  const [items,setItems]=useState<WorkoutItem[]>([]);const [name,setName]=useState('');const [workoutLevel,setWorkoutLevel]=useState<Level>('beginner');const [editing,setEditing]=useState<string|null>(null);const [saved,setSaved]=useState<Workout[]>([]);const [savedLoading,setSavedLoading]=useState(false);const [saving,setSaving]=useState(false);const [notice,setNotice]=useState('');const [noticeError,setNoticeError]=useState(false);const [draftReady,setDraftReady]=useState('');const [dirty,setDirty]=useState(false);
