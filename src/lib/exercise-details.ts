@@ -1,5 +1,6 @@
 import type {Exercise} from './catalog.ts';
 import {muscleNames} from './catalog.ts';
+import {exerciseVideos} from './exercise-videos.ts';
 type Detail={steps:string[];benefit:string;secondary:string[]};
 const patterns:Record<string,Detail>={
  squat:{steps:['დადექი ტერფებით დაახლოებით მხრების სიგანეზე; ტერფები ოდნავ გარეთ მიმართე.','დაჭიმე ტანი და მენჯი ქვემოთ და უკან წაიღე; მუხლები ტერფების მიმართულებით ამოძრავე.','ჩაჯექი შენთვის კონტროლირებად სიღრმემდე, ქუსლების მიწიდან აწევის გარეშე.','ტერფებით მყარად დაეყრდენი იატაკს და ადექი თანაბარი მოძრაობით.'],benefit:'ავითარებს ფეხებისა და დუნდულების ძალას და ჩაჯდომა-ადგომის მოძრაობის კონტროლს.',secondary:['დუნდულები','ტანის სტაბილიზატორები']},
@@ -84,5 +85,5 @@ export function getDetail(e:Exercise){const key=pattern(e);const detail=patterns
  if(e.id==='single-leg-romanian-deadlift')steps[0]='დადექი ერთ საყრდენ ფეხზე, მუხლი ოდნავ მოხარე და თავისუფალი ფეხი უკან წაიღე.';
  if(e.id==='barbell-front-squat')steps[0]='შტანგა მხრების წინა ნაწილზე მოათავსე და იდაყვები წინ და მაღლა მიმართე; ტერფები მხრების სიგანეზე დაალაგე.';
  if(e.id==='overhead-squat')steps[0]='მსუბუქი შტანგა თავს ზემოთ ფართო მოჭიდებით დაიჭირე; მხრები სტაბილური, ტანი კი გამართული იყოს.';
- return {...detail,steps,primary:muscleNames[e.muscle][1],videoUrl:null as string|null,pattern:key};
+ return {...detail,steps,primary:muscleNames[e.muscle][1],video:exerciseVideos[e.id],pattern:key};
 }
