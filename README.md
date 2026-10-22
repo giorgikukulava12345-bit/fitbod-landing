@@ -26,7 +26,7 @@ npm start
 
 - Georgian dashboard with separate home and gym plans, three levels and an interactive 28-day, four-week calendar.
 - 120 exercises, searchable by Georgian or English name, with level, equipment and muscle filters. Six categories: full body, abs, chest, arms, legs and back.
-- Every exercise includes Georgian instructions, benefits and targeted muscles. Video demonstration slots are clearly marked as unfilled, with a link to search for the exercise demonstration; no unlicensed or invented videos are embedded.
+- Every exercise includes Georgian instructions, benefits and targeted muscles. Each exercise plays a specific YouTube demonstration inside its detail dialog, using the privacy-enhanced embed host, inline playback and fullscreen controls. No external search or redirect is needed. Video controls request Georgian localization; creator audio may be in another language. Georgian written instructions remain below the player.
 - Workout builder with order, sets, repetitions/time, rest and up to 40 exercises per routine.
 - Browser-local drafts, routines and progress. No sign-in gates or cloud requests. Export/import routine JSON to move routines between devices. Clearing browser storage can remove local saves; export backups first.
 - Import merges routines without replacing existing saved routines. Opening another routine preserves a changed draft as a local backup.
@@ -47,6 +47,12 @@ Vercel project `giorgi92/fitbod-landing`, root `./`, Next.js framework, producti
 - `src/components/fitness-app.tsx`: open dashboard, calendar, catalog, detail dialog, builder, local persistence and import/export.
 - `src/lib/catalog.ts`: exercise catalog and workout-item validation.
 - `src/lib/program.ts`: home/gym classification, 28-day plans and routine import validation.
-- `src/lib/exercise-details.ts`: Georgian movement instructions, benefits and video slots.
+- `src/lib/exercise-details.ts`: Georgian movement instructions, benefits and demonstration mappings.
 - `src/app/open.css`: dashboard and responsive styling.
 - `tests/catalog.test.ts`, `tests/program.test.ts`: catalog integrity, plan variants, exercise detail coverage and import validation.
+
+## Embedded demonstration videos
+
+`src/lib/exercise-videos.ts` maps all 120 exercises to public creator-hosted YouTube demonstrations, with source titles for maintenance. IDs were checked using YouTube oEmbed on 2026-10-22. `src/components/exercise-video.tsx` renders a responsive 16:9 iframe only while the detail dialog is mounted. Closing the dialog removes the player and stops playback. Reloading a video stays on the same page. Referrer policy is `strict-origin-when-cross-origin`, which supplies the origin required by YouTube embeds. No autoplay is requested.
+
+Videos remain hosted by their creators and are embedded through YouTube; no video files are copied. Initial mappings were researched from public YouTube results and https://github.com/yuhonas/free-exercise-db/pull/24 (dataset snapshot 2ec14c1f1d866cddd6565c8eaa85ee54ed9716df), then reviewed and corrected for exact movements. Third-party availability and regional restrictions can change; update the corresponding video ID if a creator removes or restricts a video.
