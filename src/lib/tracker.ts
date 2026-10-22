@@ -27,7 +27,7 @@ export const exerciseUnit=(id:string):'reps'|'seconds'=>/plank|hold|wall-sit|car
 export function defaultKg(id:string){const e=exerciseById(id);return e.equipment==='bodyweight'?0:/squat|deadlift|leg-press/.test(id)?60:/bench-press/.test(id)?50:e.equipment==='dumbbell'?12:20}
 export function makeActive(routine:Routine,id:string,now:number,logs:WorkoutLog[]=[]):ActiveWorkout{
  return {id,name:routine.name,nameKa:routine.nameKa,startedAt:new Date(now).toISOString(),elapsed:0,runningSince:now,exercises:routine.exerciseIds.map(exerciseId=>{
-  const previous=logs.find(l=>l.exercises.some(e=>e.exerciseId===exerciseId))?.exercises.find(e=>e.exerciseId===exerciseId)?.sets.filter(s=>s.done).at(-1);
+  const previous=logs.find(l=>l.exercises.some(e=>e.exerciseId===exerciseId&&e.sets.some(s=>s.done)))?.exercises.find(e=>e.exerciseId===exerciseId)?.sets.filter(s=>s.done).at(-1);
   const plan=routine.prescriptions?.find(p=>p.exerciseId===exerciseId);const metric=plan?.metric||exerciseUnit(exerciseId);return {exerciseId,metric,sets:Array.from({length:plan?.sets||3},(_,i)=>({id:id+'-'+exerciseId+'-'+i,reps:plan?.reps||previous?.reps||(metric==='seconds'?30:10),kg:previous?.kg??defaultKg(exerciseId),done:false}))};
  })};
 }
