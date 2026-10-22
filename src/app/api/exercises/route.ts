@@ -1,0 +1,2 @@
+import {exercises} from '@/lib/catalog';
+export async function GET(request:Request){const params=new URL(request.url).searchParams;const q=(params.get('q')||'').slice(0,100).toLowerCase();const muscle=params.get('muscle');const level=params.get('level');const data=exercises.filter(e=>(!q||`${e.name} ${e.name_ka}`.toLowerCase().includes(q))&&(!muscle||e.muscle===muscle)&&(!level||e.level===level));return Response.json({count:data.length,exercises:data},{headers:{'Cache-Control':'public, max-age=3600'}})}
