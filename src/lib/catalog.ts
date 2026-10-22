@@ -120,9 +120,23 @@ Dumbbell Thruster|ჩაჯდომა ჰანტელების პრე
 Kettlebell Snatch|გირის ატაცი|kettlebell`
 };
 const cues:Record<Muscle,[string,string]>={chest:['Keep your shoulders stable and your torso controlled. Use a comfortable range without bouncing.','მხრები სტაბილურად გეჭიროთ და აკონტროლეთ ტანი. იმოძრავეთ კომფორტულ დიაპაზონში, ინერციის გარეშე.'],back:['Brace your trunk and keep your neck neutral. Pull with control and return slowly.','დაჭიმეთ ტანის კუნთები და შეინარჩუნეთ კისრის ნეიტრალური პოზიცია. მოქაჩეთ კონტროლით და ნელა დაბრუნდით.'],shoulders:['Keep your ribs controlled and avoid shrugging. Move through a comfortable range without swinging.','აკონტროლეთ ტანი და არ ასწიოთ მხრები ყურებთან. იმოძრავეთ კომფორტულ დიაპაზონში, ქნევის გარეშე.'],quads:['Keep your knees tracking in line with your feet. Lower with control and keep your feet stable.','მუხლები ტერფების მიმართულებით ამოძრავეთ. დაეშვით კონტროლით და მყარად დაეყრდენით ტერფებს.'],hamstrings:['Control the movement and keep your back neutral. Reduce your range if you cannot maintain your position.','აკონტროლეთ მოძრაობა და ზურგის ნეიტრალური პოზიცია. შეამცირეთ დიაპაზონი, თუ პოზიციას ვეღარ ინარჩუნებთ.'],glutes:['Keep your pelvis stable and drive through your feet. Avoid overextending your lower back.','შეინარჩუნეთ მენჯის სტაბილურობა და დაეყრდენით ტერფებს. მოძრაობის ბოლოს არ გადახაროთ წელი.'],arms:['Keep your elbows controlled and avoid swinging your torso. Move slowly through a comfortable range.','აკონტროლეთ იდაყვები და არ აქანაოთ ტანი. იმოძრავეთ ნელა, კომფორტულ დიაპაზონში.'],core:['Brace your trunk and breathe steadily. End the set when you cannot maintain a controlled position.','დაჭიმეთ ტანის კუნთები და ისუნთქეთ თანაბრად. შეწყვიტეთ სერია, როცა პოზიციას ვეღარ აკონტროლებთ.'],cardio:['Start at a manageable pace and control your movement. Rest between efforts as needed.','დაიწყეთ თქვენთვის მისაღები ტემპით და აკონტროლეთ მოძრაობა. საჭიროებისამებრ დაისვენეთ.']};
-export const exercises:Exercise[]=Object.entries(groups).flatMap(([group,rows])=>rows.split('\n').map((row,index)=>{const [name,name_ka,equipment]=row.split('|');const muscle=group as Muscle;return {id:name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),name,name_ka,muscle,level:(['beginner','intermediate','advanced'] as const)[Math.floor(index/4)],equipment:equipment as Equipment,cue:cues[muscle][0],cue_ka:cues[muscle][1]}}));
+const homeExtras:[string,string,Muscle,Level][]=[
+ ['Bodyweight Reverse Lunge','უკან ლანჯი საკუთარი წონით','quads','beginner'],
+ ['Bodyweight Forward Lunge','წინ ლანჯი საკუთარი წონით','quads','beginner'],
+ ['Bodyweight Split Squat','გაყოფილი ჩაჯდომა საკუთარი წონით','quads','beginner'],
+ ['Lateral Lunge','გვერდითი ლანჯი','glutes','intermediate'],
+ ['Prone Y Raise','ხელების Y-ფორმით აწევა მუცელზე წოლით','back','beginner'],
+ ['Superman','სუპერმენი','back','beginner'],
+ ['Reverse Snow Angel','ხელების რკალით გაშლა მუცელზე წოლით','back','beginner'],
+ ['Scapular Push-up','აზიდვა ბეჭების მოძრაობით','shoulders','beginner'],
+ ['Standing Calf Raise','წვერებზე აწევა','quads','beginner'],
+ ['High Knees','მუხლების მაღლა აწევით სირბილი','cardio','intermediate'],
+ ['Seated Knee Tuck','მუხლების მოზიდვა ჯდომით','core','beginner'],
+ ['Bear Crawl','დათვის სიარული','core','intermediate'],
+];
+export const exercises:Exercise[]=[...Object.entries(groups).flatMap(([group,rows])=>rows.split('\n').map((row,index)=>{const [name,name_ka,equipment]=row.split('|');const muscle=group as Muscle;return {id:name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),name,name_ka,muscle,level:(['beginner','intermediate','advanced'] as const)[Math.floor(index/4)],equipment:equipment as Equipment,cue:cues[muscle][0],cue_ka:cues[muscle][1]}})),...homeExtras.map(([name,name_ka,muscle,level])=>({id:name.toLowerCase().replace(/[^a-z0-9]+/g,'-'),name,name_ka,muscle,level,equipment:'bodyweight' as Equipment,cue:cues[muscle][0],cue_ka:cues[muscle][1]}))];
 export type WorkoutItem={exerciseId:string;sets:number;reps:number;rest:number;unit:'reps'|'seconds'};
-export type Workout={id:string;user_id:string;name:string;level:Level;items:WorkoutItem[];updated_at:string};
+export type Workout={id:string;name:string;level:Level;items:WorkoutItem[];updated_at:string};
 export const starterItems=(level:Level):WorkoutItem[]=>{
  const ids=level==='beginner'?['bodyweight-squat','incline-push-up','band-row','glute-bridge','dead-bug']:level==='intermediate'?['goblet-squat','barbell-bench-press','one-arm-dumbbell-row','dumbbell-romanian-deadlift','reverse-crunch']:['barbell-front-squat','pull-up','barbell-overhead-press','bulgarian-split-squat','hanging-leg-raise'];
  return ids.map(exerciseId=>({exerciseId,sets:3,reps:level==='beginner'?10:8,rest:90,unit:'reps'}));
