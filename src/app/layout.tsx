@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './fitness.css';
 export const metadata: Metadata = {
-  title: 'Giofitness — Less planning. More progress.',
-  description: 'Make every rep count. Discover a smarter approach to strength with workouts built around your goals, equipment, and recovery.',
+  title: 'Giofitness — Exercise Library & Workout Builder',
+  description: 'Explore 108 exercises by level and muscle group. Build, customize, and save your workouts. Available in English and Georgian.',
+  metadataBase: new URL('https://giofitness.vercel.app'),
   applicationName: 'Giofitness',
 };
 export default function RootLayout({ children }: Readonly<{children: React.ReactNode}>) {
