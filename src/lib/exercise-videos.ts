@@ -123,7 +123,7 @@ export const exerciseVideos:Record<string,ExerciseVideo>={
  "seated-knee-tuck":{youtubeId:"HR_1AqBmVAU",sourceTitle:"How to do Seated Knee Tucks | Joanna Soh"},
  "bear-crawl":{youtubeId:"qpaxI2m75RY",sourceTitle:"Bear Crawl Exercise - Kinetic Sports Rehab"},
 };
-export function youtubeEmbedUrl(id:string){
+export function youtubeEmbedUrl(id:string,lang:'en'|'ka'='ka'){
  if(!/^[A-Za-z0-9_-]{11}$/.test(id))throw new Error('Invalid YouTube video ID');
- return 'https://www.youtube-nocookie.com/embed/'+id+'?hl=ka&rel=0&playsinline=1&cc_lang_pref=ka';
+ return 'https://www.youtube-nocookie.com/embed/'+id+'?hl='+lang+'&rel=0&playsinline=1&cc_lang_pref='+lang;
 }
