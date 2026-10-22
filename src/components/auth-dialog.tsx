@@ -1,21 +1,22 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, CheckCircle2, LoaderCircle, X } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-export function AuthDialog({ mode, onClose }: { mode: 'signup'|'login'; onClose:()=>void }) {
-  const dialog=useRef<HTMLDialogElement>(null);
-  const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');const [success,setSuccess]=useState(false);
-  useEffect(()=>{const el=dialog.current;el?.showModal();return ()=>el?.close()},[]);
-  async function submit(event:React.FormEvent<HTMLFormElement>){
-    event.preventDefault(); if(busy)return;
-    if(!supabase){setMessage('Account setup is unavailable. Please try again later.');return;}
-    setBusy(true);setMessage('');const data=new FormData(event.currentTarget);
-    try {
-      const credentials={email:String(data.get('email')).trim(),password:String(data.get('password'))};
-      const {data:result,error}=mode==='signup'?await supabase.auth.signUp(credentials):await supabase.auth.signInWithPassword(credentials);
-      if(error)throw error;
-      setSuccess(true);setMessage(mode==='signup'&&!result.session?'Check your email to confirm your account.':mode==='signup'?'Your account is ready. Welcome to Giofitness.':'You’re signed in to Giofitness.');
-    }catch(error){setMessage(error instanceof Error?error.message:'Something went wrong. Please try again.')}finally{setBusy(false)}
-  }
-  return <dialog ref={dialog} className="auth-dialog" onCancel={onClose} onClick={e=>{if(e.target===e.currentTarget)onClose()}} aria-labelledby="auth-title"><button className="dialog-close" onClick={onClose} aria-label="Close account dialog"><X/></button><span className="eyebrow">YOUR STRONGER STARTS HERE</span><h2 id="auth-title">{mode==='signup'?'Make your first move.':'Welcome back.'}</h2><p>Create a Giofitness account to begin your journey.</p>{success?<div className="success-message" role="status"><CheckCircle2/>{message}<button className="cta mt-6" onClick={onClose}>Done <ArrowRight size={18}/></button></div>:<form onSubmit={submit} className="mt-7 grid gap-5"><label>Email address<input required name="email" type="email" autoComplete="email" placeholder="you@example.com" maxLength={254}/></label><label>Password<input required name="password" type="password" minLength={8} maxLength={128} autoComplete={mode==='login'?'current-password':'new-password'} placeholder="At least 8 characters"/></label><p aria-live="polite" className="form-error">{message}</p><button className="cta" disabled={busy}>{busy?<LoaderCircle className="animate-spin" size={18}/>:mode==='signup'?'Create free account':'Log in'}<ArrowRight size={18}/></button><small>Your account is free. No payment details required.</small></form>}</dialog>
+import {useEffect,useRef,useState} from 'react';
+import {ArrowRight,LoaderCircle,X} from 'lucide-react';
+import {supabase} from '@/lib/supabase';
+import {useApp} from './app-providers';
+export function AuthDialog({mode,onClose}:{mode:'signup'|'login';onClose:()=>void}){
+ const {lang,session}=useApp();const ka=lang==='ka';const dialog=useRef<HTMLDialogElement>(null);const [view,setView]=useState(mode);const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');
+ useEffect(()=>{const el=dialog.current;el?.showModal();return ()=>el?.close()},[]);
+ useEffect(()=>{if(session)onClose()},[session,onClose]);
+ async function submit(event:React.FormEvent<HTMLFormElement>){
+  event.preventDefault();if(busy)return;if(!supabase){setMessage(ka?'კავშირი მიუწვდომელია. სცადეთ მოგვიანებით.':'Account service is unavailable. Please try again.');return;}
+  setBusy(true);setMessage('');const fields=new FormData(event.currentTarget);
+  try{
+   const email=String(fields.get('email')).trim();const password=String(fields.get('password'));const username=String(fields.get('username')??'').trim();
+   if(view==='signup'&&!/^[\p{L}\p{N}_-]{3,30}$/u.test(username))throw Error(ka?'სახელი უნდა შეიცავდეს 3–30 ასოს, ციფრს, _ ან - სიმბოლოს.':'Use 3–30 letters, numbers, underscores or hyphens for your username.');
+   const {data,error}=view==='signup'?await supabase.auth.signUp({email,password,options:{data:{username}}}):await supabase.auth.signInWithPassword({email,password});
+   if(error)throw error;
+   if(data.session)onClose();else setMessage(ka?'ანგარიში შეიქმნა. შესასვლელად გადაამოწმეთ ელფოსტა.':'Account created. Check your email if confirmation is required.');
+  }catch(error){const code=(error as {code?:string}).code;const messages:Record<string,[string,string]>={invalid_credentials:['Email or password is incorrect.','ელფოსტა ან პაროლი არასწორია.'],email_exists:['An account with this email already exists.','ამ ელფოსტით ანგარიში უკვე არსებობს.'],user_already_exists:['This account already exists. Try signing in.','ეს ანგარიში უკვე არსებობს. სცადეთ შესვლა.'],weak_password:['Choose a stronger password with at least 8 characters.','აირჩიეთ უფრო ძლიერი პაროლი, სულ მცირე 8 სიმბოლოთი.'],over_request_rate_limit:['Too many attempts. Please wait and try again.','მეტისმეტად ბევრი მცდელობაა. ცოტა ხანში სცადეთ.'],email_not_confirmed:['Email confirmation is still required for this account.','ამ ანგარიშისთვის ელფოსტის დადასტურება ჯერ კიდევ საჭიროა.']};setMessage(code&&messages[code]?messages[code][ka?1:0]:error instanceof Error?error.message:ka?'დაფიქიქსირდა შეცდომა. სცადეთ ხელახლა.':'Something went wrong. Please try again.');}finally{setBusy(false)}
+ }
+ return <dialog ref={dialog} className="auth-dialog" onCancel={onClose} onClick={e=>{if(e.target===e.currentTarget)onClose()}} aria-labelledby="auth-title"><button className="dialog-close" onClick={onClose} aria-label={ka?'დახურვა':'Close account dialog'}><X/></button><span className="eyebrow">GIOFITNESS</span><h2 id="auth-title">{view==='signup'?(ka?'დაიწყე შენი გზა.':'Make your first move.'):(ka?'კეთილი იყოს დაბრუნება.':'Welcome back.')}</h2><p>{ka?'შეინახე შენი რუტინა და გააგრძელე ნებისმიერ დროს.':'Save your routines and pick up where you left off.'}</p><form onSubmit={submit} className="mt-7 grid gap-5">{view==='signup'&&<label>{ka?'მომხმარებლის სახელი':'Username'}<input required name="username" autoComplete="username" minLength={3} maxLength={30} placeholder={ka?'შენი სახელი':'Your name'}/></label>}<label>{ka?'ელფოსტა':'Email'}<input required name="email" type="email" autoComplete="email" placeholder="you@example.com" maxLength={254}/></label><label>{ka?'პაროლი':'Password'}<input required name="password" type="password" minLength={view==='signup'?8:1} maxLength={128} autoComplete={view==='login'?'current-password':'new-password'} placeholder={ka?'სულ მცირე 8 სიმბოლო':'At least 8 characters'}/></label><p role="status" className="form-error">{message}</p><button className="cta" disabled={busy}>{busy?<LoaderCircle className="animate-spin" size={18}/>:view==='signup'?(ka?'ანგარიშის შექმნა':'Create account'):(ka?'შესვლა':'Log in')}<ArrowRight size={18}/></button><button type="button" className="auth-switch" onClick={()=>{setView(view==='signup'?'login':'signup');setMessage('')}}>{view==='signup'?(ka?'უკვე გაქვს ანგარიში? შედი':'Already have an account? Log in'):(ka?'ახალი ხარ? შექმენი ანგარიში':'New here? Create an account')}</button></form></dialog>
 }
