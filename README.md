@@ -1,10 +1,12 @@
-# Giofitness / fitbod-landing
+# Giofitness
 
-A responsive fitness landing page built with Next.js App Router, React, TypeScript, Tailwind CSS v4 and Lucide. Includes interactive phone mockups, responsive navigation, exercise accordions, FAQs, and Supabase email/password registration and sign-in.
+English/Georgian fitness application: Next.js App Router, React, TypeScript, Tailwind CSS v4, Lucide and Supabase Auth/Postgres.
 
-## Run locally
+Production: https://giofitness.vercel.app
 
-Requires Node.js 20.9 or later.
+## Run
+
+Node 24 is recommended (the test command uses built-in TypeScript stripping).
 
 ```sh
 npm ci
@@ -12,34 +14,57 @@ cp .env.example .env.local
 npm run dev
 ```
 
-On PowerShell, use `Copy-Item .env.example .env.local` instead of `cp` if preferred. Open http://localhost:3000.
+PowerShell: `Copy-Item .env.example .env.local`. Open http://localhost:3000.
 
 ```sh
+npm run test
 npm run typecheck
 npm run build
 npm start
 ```
 
-Webpack is selected explicitly to avoid a Turbopack child-process failure on the Windows authoring machine.
+## Features
+
+- 108 bilingual exercises: 36 per level, 12 per muscle group, seven equipment types.
+- Search in Georgian or English and combine level, muscle and equipment filters.
+- Starter routines for Beginner, Intermediate and Advanced levels.
+- Workout builder: order exercises, remove them, edit sets, repetitions/seconds and rest. Up to 40 exercises per routine.
+- Browser drafts survive refresh. Signed-in routines are saved to the user's Supabase account; saved routines can be reopened and updated.
+- Username, email and password registration; email/password login. Username is a display name, not a unique login identifier.
+- Auth restoration subscribes to initial sessions, token refresh and sign-out. No automatic modal reopening or async Auth calls inside the auth listener.
+- English/Georgian preference persists locally and updates the document language.
 
 ## Supabase
 
-This site uses the separate `giofitness` project (`imdvuwizfoofukozestn`) in Frankfurt. The existing Geolingo project is untouched. `.env.example` includes only the public project URL and publishable client key; these may be delivered to the browser. Never use a service-role key in client code. No public database tables are required: account data is managed by Supabase Auth.
+Uses only the separate `giofitness` project `imdvuwizfoofukozestn`. Do not apply changes to the unrelated Geolingo project.
 
-Email/password sign-up is enabled; email confirmation is required. Configure Authentication → URL Configuration → Site URL to the production URL. Default hosted email delivery is subject to Supabase's limits; configure custom SMTP before a larger public launch.
+The public URL and publishable key are in `.env.example`. No service-role key is needed or shipped. Supabase handles password hashing and token storage. Display-name metadata is not used for authorization.
+
+`supabase/schema.sql` records the schema and 108 seed rows applied to this project. Apply it only once to a new empty database, not repeatedly to production. Public catalog rows are read-only to clients. Workout policies check `auth.uid() = user_id` for each operation, including both ownership conditions on update. Database checks validate workout JSON ranges.
+
+Auth settings: email/password signup enabled; immediate signup requires “Confirm email” OFF in Authentication → Sign In / Providers. No MFA challenge is implemented. Set Site URL to https://giofitness.vercel.app. Existing unconfirmed accounts may still need confirmation depending on provider behavior; never bulk-confirm unrelated users.
 
 ## Vercel
 
-Import this GitHub repository as a new Vercel project, select Next.js, and keep Root Directory at `./`. Add `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` from `.env.example` for Production and Preview. Deploy. Later commits to `main` trigger deployments.
+Project: `fitbod-landing`, root `./`, framework Next.js. Production domain: `giofitness.vercel.app`; the old `fitbod-landing.vercel.app` redirects to it. Keep the same Supabase environment variables for Production and Preview:
 
-## Source structure
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://imdvuwizfoofukozestn.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<public key from .env.example>
+```
 
-- `src/app/page.tsx`: main App Router page
-- `src/app/globals.css`: Tailwind v4 import, theme and responsive design
-- `src/components/landing.tsx`: navigation and landing sections
-- `src/components/app-preview.tsx`: interactive phone mockups
-- `src/components/muscle-map.tsx`: original SVG muscle diagram
-- `src/components/auth-dialog.tsx`: accessible native modal with Auth integration
-- `src/lib/supabase.ts`: public browser client
+`vercel.json` uses `npm ci` and `npm run build`. Dependencies are pinned and the lockfile is committed. Pages are statically rendered and interactive data loads directly through RLS-protected Supabase APIs. The webpack build avoids a Windows Turbopack worker issue.
 
-The visual concept is inspired by the supplied Fitbod direction and branded Giofitness. Sample workouts and phone screens are illustrative. No fabricated testimonials or app-store ratings are included. Native mobile apps and personalized workout generation are future product features, not implemented services.
+Sessions are origin-specific; moving from the previous domain requires one new login. Afterwards, reloads and new tabs on the same domain restore the session.
+
+## Main sources
+
+- `src/components/app-providers.tsx`: shared auth state and locale
+- `src/components/auth-dialog.tsx`: bilingual signup/login
+- `src/components/fitness-app.tsx`: app UI, filters, workout editor and cloud saves
+- `src/lib/catalog.ts`: bilingual exercise data and draft validation
+- `src/lib/supabase.ts`: singleton browser client
+- `src/app/fitness.css`: responsive app styling
+- `tests/catalog.test.ts`: catalog and draft regression checks
+
+The previous landing components remain in source for reference. The app now renders `FitnessApp` from `src/app/page.tsx`.
