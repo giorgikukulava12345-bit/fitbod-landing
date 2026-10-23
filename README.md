@@ -1,17 +1,17 @@
 # giofitness
 
-Responsive bilingual workout tracker built with Next.js App Router, React, TypeScript, Tailwind CSS v4 and Lucide. Production: https://giofitness.vercel.app
+ქართულენოვანი ფიტნეს პლატფორმა: Next.js App Router, React, TypeScript, Tailwind CSS v4 და Lucide. მოქმედი საიტი: https://giofitness.vercel.app
 
-## Run
+## გაშვება
 
-Use Node 24. No environment variables or database setup are required.
+რეკომენდებულია Node.js 24. აპს გარემოს ცვლადები, ავტორიზაცია ან ფასიანი API არ სჭირდება.
 
 ```sh
 npm ci
 npm run dev
 ```
 
-Open http://localhost:3000.
+გახსენი http://localhost:3000. წარმოებისთვის:
 
 ```sh
 npm test
@@ -20,54 +20,91 @@ npm run build
 npm start
 ```
 
-## Application
+## ფუნქციები
 
-- English/Georgian navigation, labels, charts, forms, instructions and embedded video controls. Language and kg/lbs preferences persist.
-- Overview with workout totals, consecutive training-day streak, loaded volume, training minutes, recent sessions and weight vs goal chart.
-- A clearly labeled **Demo** workspace starts with 18 sample workouts, 9 weigh-ins and a paused sample session. **Personal** starts without mock activity. Each workspace persists separately in this browser.
-- Active workout logger: editable sets, repetitions/time and canonical kilograms, kg/lbs conversion, completed/current/pending states, pause/resume clock, rest timer, next exercise preview and completion review.
-- Only completed sets count. Loaded volume is reps multiplied by kilograms; timed and bodyweight sets do not inflate loaded volume or estimated strength records.
-- Interactive anterior/posterior recovery maps. Scores use completed sets and exponentially decaying stimulus over time. This is a transparent training heuristic, not a medical assessment.
-- Progress analytics: estimated 1RM (Epley), best completed sets, 28-day/all-time filtering, weekly volume, weight entries and goal line. Charts have focusable points and labeled controls.
-- 120 searchable exercises with six muscle filters, level/equipment/location filters, Georgian and English instructions and embedded demonstrations.
-- Custom routine builder, built-in gym/home routines, and the retained 28-day home/gym program for three fitness levels. Time prescriptions are preserved when starting plan sessions.
-- Export/import JSON backups. Import merges records without silently replacing existing history. Changed records with the same identifier receive a new identifier. Existing active sessions are retained.
+- მუქი, ნარინჯისფერი აქცენტებით გაფორმებული მთავარი ეკრანი; გვერდითი ნავიგაცია კომპიუტერზე და ხუთღილაკიანი ქვედა ნავიგაცია მობილურზე.
+- სრულად ქართული ინტერფეისი, ინსტრუქციები, კალენდარი, ფილტრები და შეტყობინებები. ძველი ინგლისური ენის პარამეტრი აღარ ცვლის ინტერფეისს. კგ/ფუნტის არჩევანი შენარჩუნებულია.
+- 120 სავარჯიშო: კუნთების სქემები, ძირითადი/დამხმარე კუნთები, სარგებელი, ოთხსაფეხურიანი ინსტრუქციები, ვიდეო და დონე/აღჭურვილობა/გარემოს ფილტრები.
+- სახლისა და დარბაზის რუტინები, ინდივიდუალური რუტინის აწყობა და 28-დღიანი პროგრამა სამი დონისთვის: სულ ექვსი ვარიანტი.
+- ვარჯიშის ცოცხალი ჟურნალი: სერიები, გამეორებები/წამები, წონა, წინა შედეგები, პაუზა, დასვენების ტაიმერი და შემდეგი სავარჯიშო.
+- პროგრესის ანალიზი: დასრულებული ვარჯიშები, აქტიური დღეები, დატვირთვის მოცულობა, დრო, სავარაუდო მაქსიმალური წონა, სხეულის წონა და მიზანი.
+- წინა/უკანა კუნთების ინტერაქტიული აღდგენის სქემა. მაჩვენებელი დასრულებულ სერიებსა და გასულ დროს ეფუძნება; ეს სავარჯიშო შეფასებაა.
+- 93 პროდუქტის კვების ცნობარი რვა კატეგორიაში; მათ შორის 20 ქართული კერძი. ძებნა, კალორიით/ცილით დალაგება, კვებითი ღირებულება 100 გრამზე და პორციის კალკულაცია.
+- კვების დღიური თარიღის მიხედვით; კალორიებისა და მაკროელემენტების ავტომატური ჯამი. დღეში 100 პორციის ლიმიტი; ძველი ჩანაწერები ავტომატურად არ იჭრება.
+- შვიდი ქართული კითხვა-პასუხი ენერგეტიკული ბალანსის, პორციების, მომზადების მდგომარეობისა და მრავალფეროვანი კვების შესახებ.
+- ვარჯიშისა და კვების ცალკე JSON სარეზერვო ასლები. შემოტანა აერთიანებს ჩანაწერებს არსებული მონაცემების ჩუმად ჩანაცვლების გარეშე.
 
-## Full-stack architecture and persistence
+## სტრუქტურა
 
-- `GET /api/exercises`: public server-side exercise directory, optional `q`, `muscle`, `level` query parameters.
-- `POST /api/workouts`: validates completed workout JSON (known exercises, numeric ranges, limits, timestamps and completed sets), then returns the validated log and volume/set summary. Invalid JSON returns 400; non-JSON returns 415; oversized payload returns 413. No response is cached.
-- The client calls the workout endpoint before committing a finished session locally. If the server cannot be reached, the same shared validation runs locally and the UI reports that the record was saved on this device.
-- **This release uses device-local persistence, not a central cloud workout database.** Workout payloads are sent transiently to the Vercel validation endpoint; the application does not write them to a server database or log request bodies. Cross-device transfer is through backup export/import.
-- Workspace limits: 500 completed sessions, 1,000 weigh-ins, 100 custom routines, 40 exercises per session and 10 sets per exercise. The app reports a limit instead of pruning existing records.
-- Personal routines and program marks from the previous open app are copied when initializing Personal for the first time. The original `giofitness.open.*` keys are not modified. Legacy cloud workouts remain private in Supabase and are not exposed by the open app.
-- No authentication, account gates, service-role keys, destructive database operations or schema migration. The existing Supabase database, users and policies are unchanged. `supabase/schema.sql` remains an archival artifact and must not be applied to the existing database.
+```text
+src/app/
+  page.tsx                     # სერვერული საწყისი გვერდი
+  layout.tsx                   # ქართული ენა და მეტამონაცემები
+  redesign.css                 # განახლებული მობილური/დესკტოპის დიზაინი
+  tracker.css                  # ჟურნალის ძირითადი კომპონენტების სტილები
+  api/exercises/route.ts        # სავარჯიშოების GET API
+  api/foods/route.ts            # საკვების GET API
+  api/workouts/route.ts         # ვარჯიშების შემოწმების POST API
+src/components/
+  tracker-app.tsx              # ნავიგაცია და მოდულების კომპოზიცია
+  fitness-home.tsx             # ახალი მთავარი ეკრანი
+  muscle-illustration.tsx      # ორიგინალური SVG ილუსტრაციები
+  nutrition-panel.tsx          # საკვები, კალკულატორი, დღიური, ასლები, FAQ
+  use-tracker.ts               # არსებული მონაცემების შენახვა და სესიები
+  tracker-workout.tsx          # რუტინები და სერიების ჟურნალი
+  tracker-library.tsx          # ფილტრები და სავარჯიშოს დეტალები
+  tracker-program.tsx          # ოთხკვირიანი პროგრამა
+  tracker-overview.tsx         # სტატისტიკა, აღდგენა, წონა, ისტორია
+  tracker-charts.tsx           # ინტერაქტიული SVG გრაფიკები
+  exercise-video.tsx           # საიტში ჩაშენებული ვიდეო
+  tracker-dialog.tsx           # კლავიატურით მართვადი დიალოგები
+src/lib/
+  nutrition.ts                 # ტიპიზებული ადგილობრივი კვების მონაცემები
+  catalog.ts                   # 120 სავარჯიშოს კატალოგი
+  exercise-details.ts          # ქართული ტექნიკა და სარგებელი
+  exercise-videos.ts           # კონკრეტულ მოძრაობებზე მიბმული ვიდეოები
+  program.ts                   # 28-დღიანი პროგრამის აგება
+  tracker.ts                   # დომენური მოდელი და გამოთვლები
+  tracker-i18n.ts               # ტიპიზებული ქართული ტექსტები
+tests/
+  nutrition.test.ts            # კვების მონაცემები, ძებნა, პორციები, ვალიდაცია
+  tracker.test.ts              # მოცულობა, რეკორდები, აღდგენა, სესიები
+  catalog.test.ts
+  program.test.ts
+```
 
-## Source modules
+კატალოგები ტიპიზებული ადგილობრივი მონაცემებია; მათი გამოყენება ქსელურ API-ზე დამოკიდებული არ არის. Tailwind v4 მუშაობს PostCSS-ით; ცალკე `tailwind.config` საჭირო არ არის. ქართული შრიფტი `public/fonts/`-შია და ლოკალურად იტვირთება.
 
-- `src/components/tracker-app.tsx`: navigation, workspace/language/unit controls and feature composition.
-- `src/components/use-tracker.ts`: persistence, validation round trip, session lifecycle and backup merge.
-- `src/components/tracker-overview.tsx`: overview, recovery, activity and analytics.
-- `src/components/tracker-workout.tsx`: routine selection, set logger and timers.
-- `src/components/tracker-library.tsx`: directory, exercise detail, routine/weight/history dialogs.
-- `src/components/recovery-body.tsx`, `tracker-charts.tsx`: SVG visualizations and keyboard-accessible controls.
-- `src/components/tracker-program.tsx`: interactive four-week plan.
-- `src/lib/tracker.ts`: domain types, demo data, validation, volume, streak, records and recovery calculations.
-- `src/lib/tracker-i18n.ts`: complete typed English/Georgian UI dictionary.
-- `src/lib/exercise-copy.ts`: English movement instructions; existing Georgian instructions remain in `exercise-details.ts`.
-- `src/app/tracker.css`: desktop, tablet and mobile layouts.
-- `tests/tracker.test.ts`: calculation, persistence-model, unit, prescription and malformed-data regression checks.
+## მონაცემები და დაცვა
 
-## Videos
+**ვარჯიშები და კვება მოწყობილობაზე ინახება; ცენტრალური ღრუბლოვანი სინქრონიზაცია ამ ვერსიას არ აქვს.** დემო და პირადი სივრცეები ერთმანეთისგან იზოლირებულია. დემოში არის 18 სანიმუშო ვარჯიში, ცხრა აწონვა და პაუზაზე მყოფი სესია; პირადი სივრცე არსებულ ჩანაწერებს აღადგენს ან ცარიელად იწყებს.
 
-`src/lib/exercise-videos.ts` maps all 120 exercises to public creator-hosted YouTube demonstrations. IDs were checked using YouTube oEmbed on 2026-10-22. The responsive player uses the privacy-enhanced host, localized controls, fullscreen and inline playback, with no autoplay. Closing the dialog unmounts the iframe and stops playback. Creator audio can be in another language; bilingual written instructions remain below it. Videos remain hosted by their creators and may become unavailable if an owner removes or restricts them.
+შენარჩუნებულია `giofitness.tracker.v1.demo`, `giofitness.tracker.v1.personal` და ძველი `giofitness.open.*` გასაღებები. კვება ცალკე ინახება `giofitness.nutrition.v1.demo` / `.personal` გასაღებებში. დაზიანებულ ადგილობრივ ფაილს აპი ავტომატურად არ გადაწერს. ბრაუზერის მონაცემების გაწმენდამდე ჩამოტვირთე ორივე ტიპის სარეზერვო ასლი.
 
-Initial mappings were researched from YouTube and the public exercise dataset at https://github.com/yuhonas/free-exercise-db/pull/24 (snapshot 2ec14c1f1d866cddd6565c8eaa85ee54ed9716df), then corrected for exact movements. No video files are copied.
+ვარჯიშის API მიღებულ ჩანაწერს ამოწმებს და აბრუნებს; მონაცემთა ბაზაში არ წერს. სერვერის მიუწვდომლობისას გაზიარებული ადგილობრივი ვალიდაცია და შენახვა მუშაობს. მხოლოდ დასრულებული სერიები შედის მოცულობასა და რეკორდებში; დროით შესრულებული მოძრაობა გამეორებებად არ ითვლება.
 
-## Deployment
+არსებული Supabase ბაზა, მომხმარებლები და პოლიტიკები უცვლელია. ამ განახლებისას SQL მიგრაცია ან მონაცემთა წაშლა არ სრულდება. `supabase/`-ში ძველი არქივული ფაილები არ არის ამ ვერსიის ინსტალაციის ნაწილი და არსებულ ბაზაზე არ გაუშვა.
 
-Vercel project `giorgi92/fitbod-landing`, repository `giorgikukulava12345-bit/fitbod-landing`, root `./`, framework Next.js. Production domain: `giofitness.vercel.app`. `vercel.json` configures `npm ci` and `npm run build`. The main page and APIs run server-side; assets are served through Vercel. No environment variables are required. Existing Supabase variables may remain unused.
+## API
 
-## Validation
+- `GET /api/exercises?q=...&muscle=...&level=...`: ადგილობრივი კატალოგის ძებნა.
+- `GET /api/foods?q=ხინკალი&category=georgian`: 100 გრამზე საორიენტაციო მონაცემები. კატეგორიებია `georgian`, `fruit`, `vegetable`, `meat`, `dairy`, `grain`, `fast`, `drink`. უცნობ კატეგორიაზე პასუხია 400.
+- `POST /api/workouts`: ცნობილი სავარჯიშოების, დიაპაზონების, დროის, ლიმიტებისა და დასრულებული სერიების ვალიდაცია. არასწორ JSON-ზე 400, შიგთავსის ტიპზე 415, დიდი მოთხოვნისას 413. პასუხი არ კეშდება.
 
-14 automated tests cover catalog/plan integrity, video mapping coverage, workout validation, completed-set calculations, timed sets, canonical weight conversion, recovery decay, records and sample-workspace validity. Browser QA covers completing a workout through the API, history/analytics updates, reload persistence, language switching, exercise search and video embedding, weight entry, mobile logger layout and four-week navigation. Local API smoke checks exercise catalog search and successful/invalid/non-JSON workout submissions.
+## კვების ცნობარის წყაროები და საზღვრები
+
+მონაცემები ხელით კურირებული, დამრგვალებული **საორიენტაციო მნიშვნელობებია**, არა პროდუქტების ლაბორატორიული შემოწმება. ზოგადი პროდუქტების საცნობარო საფუძველია [USDA FoodData Central](https://fdc.nal.usda.gov/); მონაცემთა ტიპებისა და განსხვავებების აღწერა: https://fdc.nal.usda.gov/faq/. თითოეული რიცხვი კონკრეტულ FDC ჩანაწერზე არ არის მიბმული და USDA-ს პირდაპირ ექსპორტად არ უნდა ჩაითვალოს. ქართული კერძები და სწრაფი კვება რეცეპტის მიახლოებითი შეფასებებია და ცალკე მონიშნულია. სიზუსტისთვის უპირატესობა მიანიჭე პროდუქტის ეტიკეტს ან ინგრედიენტებით გამოთვლილ რეცეპტს. სასმელებისთვისაც ერთეული არის გრამი, არა მილილიტრი.
+
+კვების FAQ-ის პრინციპები ეფუძნება [ჯანდაცვის მსოფლიო ორგანიზაციის ჯანსაღი კვების ცნობარს](https://www.who.int/en/news-room/fact-sheets/detail/healthy-diet), გადამოწმებულია 2026-10-23. დღიური არ ადგენს ინდივიდუალურ კალორიულ საჭიროებას ან კვების გეგმას.
+
+## ვიდეოები
+
+ყველა 120 სავარჯიშოს აქვს პირდაპირ ჩაშენებული, ავტორის მიერ განთავსებული დემონსტრაცია. გამოიყენება `youtube-nocookie.com`, ქართული დამკვრელის პარამეტრები და მოქნილი 16:9 ჩარჩო; ავტომატური დაკვრის გარეშე. მოდალის დახურვა ვიდეოს აჩერებს. `sandbox` არ აძლევს iframe-ს ახალი ფანჯრის გახსნის ან მთავარი გვერდის გადამისამართების უფლებას. ვიდეოს ფაილები არ კოპირდება. ვიდეოს ავტორის სათაური, აუდიო, რეკლამა და ხელმისაწვდომობა მესამე მხარის კონტროლშია; ქართული წერილობითი ინსტრუქციები ვიდეოს ქვემოთ არის. YouTube-ის ბრენდული ინტერფეისი არ იშლება.
+
+ვიდეოების საწყისი კვლევის წყარო: https://github.com/yuhonas/free-exercise-db/pull/24, შემდეგ კონკრეტულ მოძრაობებზე შემოწმებული შესწორებებით. ყველა ID შემოწმებული იყო 2026-10-22; დამკვრელის განახლებული ჩარჩოს დაკვრა შემოწმებულია 2026-10-23.
+
+## Vercel
+
+არსებული პროექტი: `giorgi92/fitbod-landing`; GitHub: `giorgikukulava12345-bit/fitbod-landing`; Framework: Next.js; Root Directory: `./`; Install: `npm ci`; Build: `npm run build`; დომენი: `giofitness.vercel.app`. `vercel.json` უკვე შეიცავს აწყობის პარამეტრებს. `main`-ზე ცვლილებები ავტომატურად ქვეყნდება. ახალ პროექტში იმპორტისთვის იგივე პარამეტრები გამოიყენე. გარემოს ცვლადები ამ ვერსიას არ სჭირდება; ძველი Supabase ცვლადები არ გამოიყენება.
+
+ნაშრომი შეიცავს სრულ წყაროს, lockfile-ს და 18 ავტომატურ ტესტს. ZIP-იდან გამორიცხულია `.env*`, `node_modules`, `.next`, სამუშაო ფაილები და credentials.
