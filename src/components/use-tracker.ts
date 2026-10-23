@@ -6,7 +6,7 @@ import {validRoutine} from '@/lib/program';
 type Mode='demo'|'personal';
 const key=(mode:Mode)=>'giofitness.tracker.v1.'+mode;
 export function useTracker(today:string){
- const [data,setData]=useState<Workspace>(()=>demoWorkspace(today));const [mode,setMode]=useState<Mode>('demo');const [lang,setLanguage]=useState<Lang>('en');const [unit,setUnit]=useState<'kg'|'lbs'>('kg');const [ready,setReady]=useState(false);const [notice,setNotice]=useState('');const [saving,setSaving]=useState(false);const [now,setNow]=useState(0);const blocked=useRef(new Set<string>());const t=translator(lang);
+ const [data,setData]=useState<Workspace>(()=>demoWorkspace(today));const [mode,setMode]=useState<Mode>('demo');const [lang,setLanguage]=useState<Lang>('ka');const [unit,setUnit]=useState<'kg'|'lbs'>('kg');const [ready,setReady]=useState(false);const [notice,setNotice]=useState('');const [saving,setSaving]=useState(false);const [now,setNow]=useState(0);const blocked=useRef(new Set<string>());const t=translator(lang);
  const notify=useCallback((message:string)=>setNotice(message),[]);
  function read(mode:Mode):Workspace{
   try{const raw=localStorage.getItem(key(mode));if(raw){const parsed=JSON.parse(raw);if(validWorkspace(parsed))return parsed;blocked.current.add(key(mode));return mode==='demo'?demoWorkspace(today):blankWorkspace()}
@@ -17,7 +17,7 @@ export function useTracker(today:string){
    }return next;
   }catch{blocked.current.add(key(mode));return mode==='demo'?demoWorkspace(today):blankWorkspace()}
  }
- useEffect(()=>{let m:Mode='demo';try{const prefs=JSON.parse(localStorage.getItem('giofitness.tracker.preferences.v1')||'{}');if(prefs.mode==='personal')m='personal';if(prefs.lang==='ka'||prefs.lang==='en')setLanguage(prefs.lang);if(prefs.unit==='lbs')setUnit('lbs')}catch{}setMode(m);setData(read(m));setNow(Date.now());setReady(true)},[]);// eslint-disable-line react-hooks/exhaustive-deps
+ useEffect(()=>{let m:Mode='demo';try{const prefs=JSON.parse(localStorage.getItem('giofitness.tracker.preferences.v1')||'{}');if(prefs.mode==='personal')m='personal';if(prefs.unit==='lbs')setUnit('lbs')}catch{}setMode(m);setData(read(m));setNow(Date.now());setReady(true)},[]);// eslint-disable-line react-hooks/exhaustive-deps
  useEffect(()=>{if(!ready)return;document.documentElement.lang=lang;try{localStorage.setItem('giofitness.tracker.preferences.v1',JSON.stringify({lang,mode,unit}));if(blocked.current.has(key(mode))){notify(t('saveError'));return}localStorage.setItem(key(mode),JSON.stringify(data))}catch{notify(t('saveError'))}},[data,mode,lang,unit,ready]);// eslint-disable-line react-hooks/exhaustive-deps
  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(timer)},[]);
  useEffect(()=>{if(!notice)return;const timer=setTimeout(()=>setNotice(''),6500);return()=>clearTimeout(timer)},[notice]);
