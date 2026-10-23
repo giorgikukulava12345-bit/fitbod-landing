@@ -18,7 +18,7 @@ export const displayWeight=(kg:number,unit:Unit)=>Number(toUnit(kg,unit).toFixed
 export const dateKey=(value:string|number|Date)=>new Date(value).toISOString().slice(0,10);
 export const dayBefore=(day:string,n:number)=>new Date(Date.parse(day+'T12:00:00Z')-n*86400000).toISOString().slice(0,10);
 export const routines:Routine[]=[
- {id:'upper-a',name:'Upper body A',nameKa:'ზედა სხეული A',level:'intermediate',place:'gym',exerciseIds:['barbell-bench-press','one-arm-dumbbell-row','seated-dumbbell-press','dumbbell-lateral-raise','cable-triceps-pushdown']},
+ {id:'upper-a',name:'Upper body A',nameKa:'ზედა სხეულის დღე',level:'intermediate',place:'gym',exerciseIds:['barbell-bench-press','one-arm-dumbbell-row','seated-dumbbell-press','dumbbell-lateral-raise','cable-triceps-pushdown']},
  {id:'pull',name:'Pull day',nameKa:'მოქაჩვის დღე',level:'intermediate',place:'gym',exerciseIds:['lat-pulldown','seated-cable-row','face-pull','dumbbell-biceps-curl']},
  {id:'legs',name:'Lower body',nameKa:'ქვედა სხეული',level:'intermediate',place:'gym',exerciseIds:['barbell-back-squat','barbell-romanian-deadlift','leg-press','seated-leg-curl']},
  {id:'home',name:'Home essentials',nameKa:'ვარჯიში სახლში',level:'beginner',place:'home',exerciseIds:['bodyweight-squat','knee-push-up','glute-bridge','dead-bug','forearm-plank']},
