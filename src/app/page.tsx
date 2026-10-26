@@ -1,3 +1,8 @@
-import {TrackerApp} from '@/components/tracker-app';
-export const dynamic='force-dynamic';
-export default function Page(){return <TrackerApp today={new Date().toISOString().slice(0,10)}/>};
+import Script from 'next/script';
+import { nutritionMarkup } from '@/components/nutrition-markup';
+
+export default function Page() {
+  return <><div dangerouslySetInnerHTML={{ __html: nutritionMarkup }} />
+    <Script src="/app.js" type="module" strategy="afterInteractive" />
+  </>;
+}
