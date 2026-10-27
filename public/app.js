@@ -18,3 +18,39 @@ let updateTimer;
 function scheduleUpdate(){clearTimeout(updateTimer);$('#export').disabled=true;if(!form.checkValidity()){$('#weekly-cost').textContent='—';$('#remaining').textContent='შეავსე მონაცემები სწორი მნიშვნელობებით';return;}updateTimer=setTimeout(()=>{generate();$('#export').disabled=!!$('#error').textContent;},180);}
 form.addEventListener('input',scheduleUpdate);form.addEventListener('change',scheduleUpdate);
 $('#price-list').addEventListener('change',()=>generate());form.addEventListener('submit',generate);$('#regenerate').addEventListener('click',()=>{seed++;generate({preventDefault(){}})});$('#days').addEventListener('click',event=>{const el=event.target.closest('[data-day]');if(el){selected=Number(el.dataset.day);renderDay();$(`[data-day="${selected}"]`).focus()}});$('#days').addEventListener('keydown',event=>{if(!['ArrowRight','ArrowLeft','Home','End'].includes(event.key))return;event.preventDefault();selected=event.key==='Home'?0:event.key==='End'?6:(selected+(event.key==='ArrowRight'?1:6))%7;renderDay();$(`[data-day="${selected}"]`).focus()});$('#shopping-list').addEventListener('change',event=>{const id=event.target.dataset.shop;if(id){event.target.checked?checked.add(id):checked.delete(id);persist()}});$('#print').addEventListener('click',()=>window.print());$('#export').addEventListener('click',()=>{if(!plan)return;const lines=['GIOFITNESS — კვირის კვების გეგმა','ფასები და კალორიები მიახლოებითია.','მარცვლეული/პარკოსნები მშრალია, ხორცი და ბოსტნეული — უმი.',''];for(const [i,day] of plan.week.entries()){lines.push(names[i]+` — ${num(day.totals.kcal)} კკალ, ${money(day.totals.cost)} ₾`);for(const m of day.meals){const s=summarize(m.items,planPrices);lines.push(`${types[m.type][0]}: ${m.name} — ${num(s.kcal)} კკალ`,m.items.map(([id,g])=>foods.find(f=>f.id===id).name+': '+g+' გ').join(', '),m.instruction)}lines.push('')}lines.push('საყიდლების სია:');for(const [id,g] of Object.entries(ingredients()))lines.push(foods.find(f=>f.id===id).name+': '+g+' გ');lines.push(`კვირის ჯამი: ${money(plan.totals.cost)} ₾`);const url=URL.createObjectURL(new Blob(['\ufeff'+lines.join('\n')],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='giofitness-week.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('კვირის გეგმა ჩამოიტვირთა')});generate();
+
+// Everyday Georgian dish reference. Values are curated estimates per 100 g cooked food.
+async function initGeorgianCatalog(){
+ const container=$('#georgian-list');if(!container)return;
+ try{
+  const response=await fetch('/georgian-dishes.json?v=20261027');if(!response.ok)throw Error('load');
+  const dishes=await response.json();let showAll=false;
+  const selectedDish=()=>dishes.find(f=>f.id===$('#dish-select').value);
+  $('#dish-select').innerHTML=dishes.map(f=>'<option value="'+f.id+'">'+f.name+'</option>').join('');
+  function updatePortion(){
+   const food=selectedDish(),value=Number($('#dish-amount').value),grams=$('#dish-unit').value==='grams'?value:value*food.servingGrams;
+   $('#dish-unit').options[0].textContent=food.servingLabel+' ('+food.servingGrams+' გ)';
+   if(!Number.isFinite(grams)||grams<=0||grams>3000){$('#dish-kcal').textContent='—';$('#dish-basis').textContent='შეამოწმე რაოდენობა';$('#dish-macros').textContent='';$('#dish-error').textContent='პორციის საერთო წონა უნდა იყოს 0-ზე მეტი და არაუმეტეს 3000 გრამისა.';return;}
+   $('#dish-error').textContent='';$('#dish-basis').textContent=food.name+' · '+Math.round(grams)+' გ';
+   $('#dish-kcal').textContent='≈ '+Math.round(food.kcal*grams/100)+' კკალ';
+   $('#dish-macros').textContent='ცილა '+(food.protein*grams/100).toFixed(1)+' გ · ცხიმი '+(food.fat*grams/100).toFixed(1)+' გ · ნახშირწყლები '+(food.carbs*grams/100).toFixed(1)+' გ';
+  }
+  function renderDishes(){
+   const q=$('#dish-search').value.normalize('NFKC').trim().toLocaleLowerCase('ka'),category=$('#dish-category').value;
+   const list=dishes.filter(f=>(category==='all'||f.group===category)&&f.name.toLocaleLowerCase('ka').includes(q));
+   const visible=showAll||q||category!=='all'?list:list.slice(0,12);
+   $('#dish-count').textContent='ნაპოვნია '+list.length+' კერძი · ნაჩვენებია '+visible.length;
+   container.innerHTML=visible.length?visible.map(f=>'<article class="dish-card"><span class="dish-group">'+f.group+'</span><h3>'+f.name+'</h3><div class="dish-energy"><strong>≈ '+f.kcal+'</strong><span>კკალ / 100 გ</span></div><p>'+f.servingLabel+' ≈ '+f.servingGrams+' გ · <b>≈ '+Math.round(f.kcal*f.servingGrams/100)+' კკალ</b></p><button type="button" class="text-button" data-dish="'+f.id+'">ჩემი პორციის გამოთვლა ↗</button></article>').join(''):'<p class="fine">ასეთი კერძი ვერ მოიძებნა. სცადე სხვა დასახელება.</p>';
+   $('#dish-more').hidden=visible.length===list.length;
+  }
+  $('#dish-select').addEventListener('change',()=>{$('#dish-amount').value='1';$('#dish-unit').value='serving';updatePortion();});
+  $('#dish-amount').addEventListener('input',updatePortion);
+  $('#dish-unit').addEventListener('change',()=>{$('#dish-amount').value=$('#dish-unit').value==='grams'?String(selectedDish().servingGrams):'1';updatePortion();});
+  $('#dish-search').addEventListener('input',()=>{showAll=false;renderDishes();});
+  $('#dish-category').addEventListener('change',()=>{showAll=false;renderDishes();});
+  $('#dish-more').addEventListener('click',()=>{showAll=true;renderDishes();});
+  container.addEventListener('click',event=>{const button=event.target.closest('[data-dish]');if(!button)return;$('#dish-select').value=button.dataset.dish;$('#dish-amount').value='1';$('#dish-unit').value='serving';updatePortion();$('.dish-calculator').scrollIntoView({behavior:'smooth',block:'center'});$('#dish-amount').focus({preventScroll:true});});
+  updatePortion();renderDishes();
+ }catch{container.innerHTML='<p class="fine">ცნობარის ჩატვირთვა ვერ მოხერხდა. განაახლე გვერდი და სცადე ხელახლა.</p>';}
+}
+initGeorgianCatalog();
