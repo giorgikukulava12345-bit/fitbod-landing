@@ -8,5 +8,5 @@ export const metadata: Metadata = {
   applicationName: 'Giofitness',
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="ka"><body>{children}</body></html>;
+  return <html lang="ka" suppressHydrationWarning><head><script id="theme-boot" dangerouslySetInnerHTML={{ __html: "try{var t=localStorage.getItem('giofitness.theme');if(t!=='dark'&&t!=='light')t=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.dataset.theme=t;document.documentElement.style.colorScheme=t;}catch(e){document.documentElement.dataset.theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}" }} /></head><body>{children}</body></html>;
 }
